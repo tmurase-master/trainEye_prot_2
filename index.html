@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+	<meta charset="UTF-8">
+	<title>「トレイン・アイ」</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="description" content="360カメラで撮影した映像と設備位置情報を管理し閲覧するwebベースアプリ">
+	<script src="./js/aframe.min.js"></script>
+	<script src="./js/leaflet.js"></script>
+	<link rel="stylesheet" href="./css/leaflet.css">
+	<link rel="stylesheet" href="css/style.css">
+	<style>
+		.flexbox {
+			display: flex;
+			flex-wrap: wrap;
+		}
+
+		.side {
+			width: 50%;
+			padding-left: 20px;
+			padding-right: 20px
+		}
+
+		@media (max-width: 1280px) {
+			.side {
+				width: 100%;
+			}
+		}
+
+		.imgcanvas {
+			padding: 10px;
+			border: 1px solid #333333;
+			border-radius: 10px;
+		}
+
+		.mapcanvas {
+			padding: 10px;
+			border: 1px solid #333333;
+			border-radius: 10px;
+		}
+	</style>
+</head>
+
+<body>
+	<header>
+		<div id="logo">
+			<h1><a href="index.html"><img src="images/logo.png" alt="JR東海「トレイン・アイ」"></a></h1>
+		</div>
+	</header>
+	<!--開閉ブロック-->
+
+	<!-- <div id="menubar">
+		<nav>
+			<ul>
+				<li><a href="index.html">ホーム</a></li>
+				<li><a href="siteview.html">SITEVIEW</a></li>
+				<li><a href="addsiteaddview.html">地図情報更新</a></li>
+				<li><a href="howto.html">使い方</a></li>
+			</ul>
+		</nav>
+	</div> -->
+	<!--/#menubar-->
+	<main>
+		<section>
+			<h2>設備位置データファイルの読み込み</h2>
+			<div class="equip-add">
+				<input type="button" value=" 地図表示 " id="tokaido-btn" onclick="testtest_ver2()">
+				<form action="" method="get">
+					<input type="file" name="upload_file" id="import-EQUIPexcel" accept=".xls,.xlsx,.xlsm" />
+					<p class="rosen-tag"> 東海道本線 </p>
+				</form>
+			</div>
+			<div class='flexbox'>
+				<div class='side'>
+					<h2>設備マップ</h2>
+					<div class='mapcanvas' style="height: 500px; width: 100%;">
+						<div id="osmmap" style="height: 480px; width: 100%;"></div>
+					</div>
+				</div>
+				<div class='side'>
+					<h2>列車視点360動画</h2>
+					<div class='imgcanvas' id="3Dimg" style="height: 500px; width: 100%;">
+						<a-scene embedded>
+							<a-assets>
+								<video id="video" muted autoplay playsinline src="movies/front_side.mp4"
+									controls></video>
+							</a-assets>
+							<a-videosphere src="#video"></a-videosphere>
+						</a-scene>
+					</div>
+					<div class="movie-customize">
+						<div class="movie-currentTime">
+							<time id="playback_position">0:00</time>
+							<label id="fordevtime">0</time>
+						</div>
+						<div class="movie-button">
+							<button id="btn-start">再生</button>
+							<button id="btn-pause">一時停止</button>
+							<button id="btn-1x">通常速度</button>
+							<button id="btn-5x">10倍速</button>
+							<!-- <button id="btn--1x">-1倍速</button> -->
+							<button id="btn-back1sec">1秒巻戻</button>
+							<button id="btn-back10sec">10秒巻戻</button>
+						</div>
+						<div class="form">
+							<label class="form-label">再生時間</label>
+							<input type="number" id="input-time" value="120.000" name="input-time">
+							<input type="button" value="ジャンプ" id="btn-jump">
+							<div class="error"></div>
+
+							<label class="form-label-kiro">キロ程</label>
+							<input type="number" id="input-kiro" value="150489" name="input-kiro">
+							<input type="button" value="ジャンプ" id="btn-jump-kiro">
+							<div class="error"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+	</main>
+	<footer>
+		<div class="copy">
+			<small>Copyright&copy; <a href="index.html">UNAGI</a> All Rights Reserved.</small>
+			<span class="pr"><a href="https://template-party.com/" target="_blank">《Web
+					Design:Template-Party》</a></span>
+		</div>
+	</footer>
+	</div>
+	<!--/#container-->
+
+	<!--ページの上部に戻る「↑」ボタン-->
+	<p class="nav-fix-pos-pagetop"><a href="#pagetop">↑</a></p>
+
+	<!-- jQueryの読み込み -->
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/protonet-jquery.inview/1.1.2/jquery.inview.min.js"></script>
+	<script src="js/jquery.inview_set.js"></script>
+	<script src="js/excel.js"></script>
+	<script src="js/init_show_map.js" charset="utf-8"></script>
+	<script src="js/show_map.js" charset="utf-8"></script>
+	<script src="js/movie_play.js"></script>
+
+	<!-- Latest compiled and minified JavaScript -->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.11.1/xlsx.full.min.js"></script>
+
+</body>
+
+</html>
