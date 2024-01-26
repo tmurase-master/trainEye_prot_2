@@ -8,8 +8,14 @@
 	<meta name="description" content="360カメラで撮影した映像と設備位置情報を管理し閲覧するwebベースアプリ">
 	<script src="./js/aframe.min.js"></script>
 	<script src="./js/leaflet.js"></script>
+	<script src="https://vjs.zencdn.net/5.8/video.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r76/three.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/videojs-panorama@0.1.7/dist/videojs-panorama.v5.min.js"></script>
 	<link rel="stylesheet" href="./css/leaflet.css">
 	<link rel="stylesheet" href="css/style.css">
+	<link href="https://vjs.zencdn.net/5.8/video-js.css" rel="stylesheet">
+	<link href="https://cdn.jsdelivr.net/npm/videojs-panorama@0.1.7/dist/videojs-panorama.min.css" rel="stylesheet">
+
 	<style>
 		.flexbox {
 			display: flex;
@@ -32,12 +38,48 @@
 			padding: 10px;
 			border: 1px solid #333333;
 			border-radius: 10px;
+			z-index: 2;
+			background: rgba(215, 181, 68, 0.5);
+			height: 500px;
+			width: 100%;
+
 		}
 
 		.mapcanvas {
 			padding: 10px;
 			border: 1px solid #333333;
 			border-radius: 10px;
+			background: rgba(215, 181, 68, 0.5);
+			z-index: 1;
+		}
+
+		.imgcanvas .video-js {
+			max-width: 100%;
+			height: 100%;
+			object-fit: cover;
+			display: block;
+			padding-top:56.25%;/*比率調整※16:9の画面幅*/
+			z-index: 0;
+		}
+
+		.video-js:hover .vjs-big-play-button,
+		.video-js .vjs-big-play-button {
+			height: 90px;
+			width: 90px;
+			border: 3px dotted #ffff70;
+			/*ドット枠線*/
+			border-radius: 50%;
+			/*形を丸に*/
+			font-size: 5em;
+			/*三角の大きさ変更*/
+			line-height: 90px;
+			background: rgba(68, 215, 77, .5);
+			/*動画の中心に再生ボタンを移動*/
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -50%);
+			-webkit-transform: translate(-50%, -50%);
+			-ms-transform: translate(-50%, -50%);
 		}
 	</style>
 </head>
@@ -73,26 +115,28 @@
 				</form>
 				<button type="button" onclick="testtest_ver2()">地図表示</button>
 				<p></p>
-				<button  id="phoneEquipRead-btn">スマホ用）設備位置データファイル読込</button>
+				<button id="phoneEquipRead-btn">スマホ用）設備位置データファイル読込</button>
 				<p></p>
 			</div>
 			<div class='flexbox'>
 				<div class='side'>
 					<h2>設備マップ</h2>
-					<div class='mapcanvas' style="height: 500px; width: 100%;">
+					<div class='mapcanvas'>
 						<div id="osmmap" style="height: 480px; width: 100%;"></div>
 					</div>
 				</div>
 				<div class='side'>
 					<h2>列車視点360動画</h2>
-					<div class='imgcanvas' id="3Dimg" style="height: 500px; width: 100%;">
-						<a-scene embedded>
+					<!-- <div class='imgcanvas' id="3Dimg" style="height: 500px; width: 100%;"> -->
+					<div class='imgcanvas' id="3Dimg">
+						<!-- <a-scene embedded>
 							<a-assets>
 								<video id="video" muted autoplay playsinline src="movies/front_side.mp4"
 									controls></video>
 							</a-assets>
 							<a-videosphere src="#video"></a-videosphere>
-						</a-scene>
+						</a-scene> -->
+						<video id="video" class="video-js"></video>
 					</div>
 					<div class="movie-customize">
 						<div class="movie-currentTime">
@@ -102,15 +146,15 @@
 						<div class="movie-button">
 							<button id="btn-start">再生</button>
 							<button id="btn-pause">一時停止</button>
-							<button id="btn-1x">通常速度</button>
-							<button id="btn-5x">10倍速</button>
+							<!-- <button id="btn-1x">通常速度</button> -->
+							<!-- <button id="btn-5x">10倍速</button> -->
 							<!-- <button id="btn--1x">-1倍速</button> -->
 							<button id="btn-back1sec">1秒巻戻</button>
 							<button id="btn-back10sec">10秒巻戻</button>
 						</div>
 						<div class="form">
 							<label class="form-label">再生時間</label>
-							<input type="number" id="input-time" value="120.000" name="input-time">
+							<input type="number" id="input-time" value="60.000" name="input-time">
 							<input type="button" value="ジャンプ" id="btn-jump">
 							<div class="error"></div>
 

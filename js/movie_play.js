@@ -1,8 +1,36 @@
-const movie360 = document.getElementById('video');
+const movie360 = videojs('video', {
+    //fill: true,
+    fuild: true,
+    //responsive: true,
+    'aspectRatio': '16:9',
+    autoplay: true, // 自動再生
+    loop: false, // ループ再生
+    controls: true, // コントロール制御表示
+    preload: 'auto', // 読み込み制御
+    'playbackRates': [0.1, 0.5, 1, 3 ,5, 10],
+});
+movie360.src({
+    type: 'video/mp4',
+    src: 'movies/front_side.mp4'
+});
+movie360.panorama({
+    autoMobileOrientation: true,
+    initFov: 100,
+    clickAndDrag: true
+});
+movie360.on('playing', function () {
+    playtimer = setInterval(function(){
+        playback_position.textContent = convertTime(movie360.currentTime());
+        fordevtime.textContent = movie360.currentTime();
+        console.log(movie360.currentTime());
+    }, 100);
+});
+
+const movie360_UI = document.getElementById('video');
 const btnStart = document.querySelector("#btn-start");
 const btnPause = document.querySelector("#btn-pause");
-const btnNormarl = document.querySelector("#btn-1x");
-const btnNormal5 = document.querySelector("#btn-5x");
+//const btnNormarl = document.querySelector("#btn-1x");
+//const btnNormal5 = document.querySelector("#btn-5x");
 // const btnReverse = document.querySelector("#btn--1x");
 const btnBack1sec = document.querySelector("#btn-back1sec");
 const btnBack10sec = document.querySelector("#btn-back10sec");
@@ -20,25 +48,27 @@ const fordevtime = document.getElementById("fordevtime");
 //     fordevtime.textContent = movie360.currentTime;
 // });
 
+
+
 btnStart.addEventListener("click",(e) => {
-    movie360.play();
-    playtimer = setInterval(function(){
-        playback_position.textContent = convertTime(movie360.currentTime);
-        fordevtime.textContent = movie360.currentTime;
-    }, 100);
+    movie360.ready(() => {
+        movie360.play();
+    });
 });
 
 btnPause.addEventListener("click",(e) => {
-    movie360.pause();
+    movie360.ready(() => {
+        movie360.pause();
+    });
 });
 
-btnNormarl.addEventListener("click",(e) => {
-    movie360.playbackRate = 1.0;
-});
+// btnNormarl.addEventListener("click",(e) => {
+//     movie360.playbackRate = 1.0;
+// });
 
-btnNormal5.addEventListener("click",(e) => {
-    movie360.playbackRate = 5.0;
-});
+// btnNormal5.addEventListener("click",(e) => {
+//     movie360.playbackRate = 5.0;
+// });
 
 // btnReverse.addEventListener("click",(e) => {
 //     movie.playbackRate = -1.0;
@@ -46,18 +76,38 @@ btnNormal5.addEventListener("click",(e) => {
 // });
 
 btnBack1sec.addEventListener("click",(e) => {
-    setTime = movie360.currentTime - 1;
-    setTime = Math.floor(setTime * 100000) / 100000;
-    movie360.currentTime = setTime;
+    movie360.ready(() => {
+        setTime = movie360.currentTime() - 1;
+        setTime = Math.floor(setTime * 100000) / 100000;
+        console.log(setTime);
+        movie360.currentTime(setTime);
+        if(movie360.paused()){
+            // Playerを再生する
+            movie360.play();
+            // Playerを一時停止させる
+            movie360.pause();
+        }
+    });
 })
-btnBack1sec.addEventListener("click",(e) => {
-    setTime = movie360.currentTime - 10;
-    setTime = Math.floor(setTime * 100000) / 100000;
-    movie360.currentTime = setTime;
+btnBack10sec.addEventListener("click",(e) => {
+    movie360.ready(() => {
+        setTime = movie360.currentTime() - 10;
+        setTime = Math.floor(setTime * 100000) / 100000;
+        console.log(setTime);
+        movie360.currentTime(setTime);
+        if(movie360.paused()){
+            // Playerを再生する
+            movie360.play();
+            // Playerを一時停止させる
+            movie360.pause();
+        }
+    });
 })
 
 btnJump.addEventListener("click",(e) => {
-    movie360.currentTime = inputTime.value;
+    movie360.ready(() => {
+        movie360.currentTime(inputTime.value);
+    });
 })
 
 function kiroTomovieTime(kiro){
@@ -72,7 +122,7 @@ function kiroTomovieTime(kiro){
         var kiroTime = kiro_time_arr[kiroResearch][1];
         console.log(kiroResearch);
         console.log(kiroTime);
-        movie360.currentTime = kiroTime;
+        movie360.currentTime(kiroTime)
     }
 }
 
