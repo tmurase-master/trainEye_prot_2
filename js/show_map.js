@@ -19,6 +19,7 @@ var map;
 
 // }
 function testtest_ver2() {
+  console.log(readEquipData);
   for (var i = 0, len = readEquipData.Sheet1.length; i < len; i++) {
     for (var j = 0, len = GISarr.length; j < len; j++) {
       if ((readEquipData.Sheet1[i].キロ程始.replace(/[^0-9]/g, '') - GISarr[j][0].replace(/[^0-9]/g, '')) <= 5) {
@@ -31,7 +32,22 @@ function testtest_ver2() {
 
     MapSetMarkers(readEquipData, i);
   }
+}
 
+function phoneEquipRead() {
+  readEquipData
+  for (var i = 0, len = readEquipData.Sheet1.length; i < len; i++) {
+    for (var j = 0, len = GISarr.length; j < len; j++) {
+      if ((readEquipData.Sheet1[i].キロ程始.replace(/[^0-9]/g, '') - GISarr[j][0].replace(/[^0-9]/g, '')) <= 5) {
+        readEquipData.Sheet1[i].test = readEquipData.Sheet1[i].キロ程始.replace(/[^0-9]/g,'');
+        readEquipData.Sheet1[i].latitude = GISarr[j][1];
+        readEquipData.Sheet1[i].longitude = GISarr[j][2];
+        break;}
+    }
+    console.log(readEquipData.Sheet1[i]);
+
+    MapSetMarkers(readEquipData, i);
+  }
 }
 
 function MapSetMarkers(jsondata, markerNum) {

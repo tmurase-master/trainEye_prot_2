@@ -6,6 +6,5 @@ window.addEventListener('load', function () {
     maxZoom: 20,
     attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, '
   }).addTo(map);
-  map.setView([34.9724, 138.3893], 11);
-
+  map.setView([35.145526,138.641722], 11);
 })

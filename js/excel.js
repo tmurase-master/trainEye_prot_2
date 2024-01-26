@@ -26,7 +26,7 @@ var GISarr;
           }
         });
         return result;
-      
+
       },
       toCsv: function () {
         var result = [];
@@ -120,23 +120,80 @@ document.getElementById('import-EQUIPexcel').addEventListener('change', function
       readEquipData = xlsx.toJson();
     });
   }
+  console.log(readEquipData);
   //
-var req = new XMLHttpRequest();
-req.open("get","東海道線GIS.csv",true);
-req.send(null);
+  var req = new XMLHttpRequest();
+  req.open("get", "東海道線GIS.csv", true);
+  req.send(null);
 
-req.onload = function(){
-GISarr = convertCSVtoArray(req.responseText);
-
-}
-function convertCSVtoArray(str){
-  var result_ = [];
-  var tmp = str.split("\n");
-  for(var i=0;i<tmp.length;++i){
-    result_[i] = tmp[i].split(',');
+  req.onload = function () {
+    GISarr = convertCSVtoArray(req.responseText);
   }
-  return result_;
-}
 
+  setTimeout(() => {
+    testtest_ver2();
+  }, 1000);
+
+  function convertCSVtoArray(str) {
+    var result_ = [];
+    var tmp = str.split("\n");
+    for (var i = 0; i < tmp.length; ++i) {
+      result_[i] = tmp[i].split(',');
+    }
+    return result_;
+  }
 }, false);
 
+document.getElementById('phoneEquipRead-btn').addEventListener('click', function (evt) {
+
+  var xlsxfilereq = new XMLHttpRequest();
+  xlsxfilereq.open("get", "設備諸元データ一覧_20230922191250.csv", true);
+  xlsxfilereq.overrideMimeType('text/plain; charset=Shift_JIS');
+  xlsxfilereq.send(null);
+  xlsxfilereq.onload = function () {
+    readEquipData = convertCSVtoArray(xlsxfilereq.responseText);
+    console.log(readEquipData);
+    readEquipData = convertArraytoObject(readEquipData);
+    console.log(readEquipData);
+  }
+
+  var req = new XMLHttpRequest();
+  req.open("get", "東海道線GIS.csv", true);
+  req.send(null);
+  req.onload = function () {
+    GISarr = convertCSVtoArray(req.responseText);
+    console.log(GISarr);
+  }
+  setTimeout(() => {
+    testtest_ver2();
+  }, 1000);
+  
+
+  xlsxfilereq.onreadystatechange = function () {
+    if (xlsxfilereq.readyState === 4) {
+      req.onreadystatechange = function () {
+        if (req.readyState === 4) {
+
+        }
+      }
+    }
+  }
+
+
+
+  function convertCSVtoArray(str) {
+    var result_ = [];
+    var tmp = str.split("\n");
+    for (var i = 0; i < tmp.length; ++i) {
+      result_[i] = tmp[i].split(',');
+    }
+    return result_;
+  }
+
+  function convertArraytoObject(str) {
+    const headers = str[0];
+    return { Sheet1: str.slice(1).map((e) => e.reduce((i, n, a) => { i[headers[a]] = n; return i; }, {})) };
+    // str.slice(1).map((e) => e.reduce((i, n, a) => { i[headers[a]] = n; return i; }, {}));
+  }
+
+}, false);

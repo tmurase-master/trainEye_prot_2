@@ -65,11 +65,16 @@
 		<section>
 			<h2>設備位置データファイル「読込」</h2>
 			<div class="equip-add">
-				<input type="button" value=" 地図表示 " id="tokaido-btn" onclick="testtest_ver2()">
+				<button>東海道線（線区を切り替える機能は開発中）</button>
+				<p></p>
 				<form action="" method="get">
 					<input type="file" name="upload_file" id="import-EQUIPexcel" accept=".xls,.xlsx,.xlsm" />
-					<p class="rosen-tag"> 東海道本線 </p>
+					<p></p>
 				</form>
+				<button type="button" onclick="testtest_ver2()">地図表示</button>
+				<p></p>
+				<button  id="phoneEquipRead-btn">スマホ用）設備位置データファイル読込</button>
+				<p></p>
 			</div>
 			<div class='flexbox'>
 				<div class='side'>
