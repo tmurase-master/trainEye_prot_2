@@ -110,6 +110,12 @@ btnJump.addEventListener("click",(e) => {
     });
 })
 
+function jumpMovieTime(movietime){
+    movie360.ready(() => {
+        movie360.currentTime(movietime);
+    });
+}
+
 function kiroTomovieTime(kiro){
     var req = new XMLHttpRequest();
     req.open("get","movies/キロ程時間変換.csv",true);

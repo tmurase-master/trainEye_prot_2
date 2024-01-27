@@ -1,7 +1,6 @@
 // グローバル変数
 var readGIS;
 var readEquipData;
-var GISarr;
 
 (function (window, document) {
   window.ExcelJs = {};
@@ -122,26 +121,26 @@ document.getElementById('import-EQUIPexcel').addEventListener('change', function
   }
   console.log(readEquipData);
   //
-  var req = new XMLHttpRequest();
-  req.open("get", "東海道線GIS.csv", true);
-  req.send(null);
+  // var req = new XMLHttpRequest();
+  // req.open("get", "東海道線GIS.csv", true);
+  // req.send(null);
 
-  req.onload = function () {
-    GISarr = convertCSVtoArray(req.responseText);
-  }
+  // req.onload = function () {
+  //   GISarr = convertCSVtoArray(req.responseText);
+  // }
 
   setTimeout(() => {
     testtest_ver2();
   }, 1000);
 
-  function convertCSVtoArray(str) {
-    var result_ = [];
-    var tmp = str.split("\n");
-    for (var i = 0; i < tmp.length; ++i) {
-      result_[i] = tmp[i].split(',');
-    }
-    return result_;
-  }
+  // function convertCSVtoArray(str) {
+  //   var result_ = [];
+  //   var tmp = str.split("\n");
+  //   for (var i = 0; i < tmp.length; ++i) {
+  //     result_[i] = tmp[i].split(',');
+  //   }
+  //   return result_;
+  // }
 }, false);
 
 document.getElementById('phoneEquipRead-btn').addEventListener('click', function (evt) {
@@ -157,38 +156,25 @@ document.getElementById('phoneEquipRead-btn').addEventListener('click', function
     console.log(readEquipData);
   }
 
-  var req = new XMLHttpRequest();
-  req.open("get", "東海道線GIS.csv", true);
-  req.send(null);
-  req.onload = function () {
-    GISarr = convertCSVtoArray(req.responseText);
-    console.log(GISarr);
-  }
+  // var req = new XMLHttpRequest();
+  // req.open("get", "東海道線GIS.csv", true);
+  // req.send(null);
+  // req.onload = function () {
+  //   GISarr = convertCSVtoArray(req.responseText);
+  //   console.log(GISarr);
+  // }
   setTimeout(() => {
     testtest_ver2();
   }, 1000);
   
-
-  xlsxfilereq.onreadystatechange = function () {
-    if (xlsxfilereq.readyState === 4) {
-      req.onreadystatechange = function () {
-        if (req.readyState === 4) {
-
-        }
-      }
-    }
-  }
-
-
-
-  function convertCSVtoArray(str) {
-    var result_ = [];
-    var tmp = str.split("\n");
-    for (var i = 0; i < tmp.length; ++i) {
-      result_[i] = tmp[i].split(',');
-    }
-    return result_;
-  }
+  // function convertCSVtoArray(str) {
+  //   var result_ = [];
+  //   var tmp = str.split("\n");
+  //   for (var i = 0; i < tmp.length; ++i) {
+  //     result_[i] = tmp[i].split(',');
+  //   }
+  //   return result_;
+  // }
 
   function convertArraytoObject(str) {
     const headers = str[0];

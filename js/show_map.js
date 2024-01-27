@@ -1,5 +1,9 @@
 // グローバル変数
 var map;
+let moviePos = [];
+var GISarr;
+var Allarr= [];
+
 
 //仕様変更によりコメントアウト（キロ程データ読み込みボタン削除）
 // function testtest() {
@@ -18,15 +22,119 @@ var map;
 //   }
 
 // }
+
+function loadGISFile() {
+  var req = new XMLHttpRequest();
+  req.open("get", "東海道線GIS.csv", true);
+  req.send(null);
+  req.onload = function () {
+    GISarr = convertCSVtoArray(req.responseText);
+  }
+}
+function convertCSVtoArray(str) {
+  var result_ = [];
+  var tmp = str.split("\n");
+  for (var i = 0; i < tmp.length; ++i) {
+    result_[i] = tmp[i].split(',');
+  }
+  return result_;
+}
+
+function loadGPXdataToMap() {
+  var gpxreq = new XMLHttpRequest();
+  gpxreq.open('get', 'gpx/trainRoot.gpx', true);
+  gpxreq.send(null);
+  gpxreq.onload = function () {
+    gpxToMap(gpxreq.responseText);
+  }
+}
+
+function gpxToMap(gpxStr) {
+  var parser = new DOMParser();
+  var gpx = parser.parseFromString(gpxStr, 'text/xml');
+  var elements = gpx.getElementsByTagName('trkpt');
+  var routeLatLng = [];
+  for (var i = 0; i < (elements.length); i++) {
+    moviePos.push(gpxParse(elements.item(i),elements.item(0)));
+    MapSetRootPoint(moviePos, i);
+    routeLatLng[i] = [moviePos[i]['lat'], moviePos[i]['lon']];
+  }
+  L.polyline(routeLatLng, { color: '#3B83CC', weight: 5 }).addTo(map);
+  
+}
+function gpxParse(trkpt,trkpt0) {
+  var timeTxt = trkpt.getElementsByTagName('time')[0].textContent;
+  var time = new Date(timeTxt);
+  var timeTxt0 = trkpt0.getElementsByTagName('time')[0].textContent;
+  var time0 = new Date(timeTxt0);
+  let tmpdate1 = new Date(time0.toLocaleDateString() + ' ' + time0.toLocaleTimeString());
+  let tmpdate2 = new Date(time.toLocaleDateString() + ' ' + time.toLocaleTimeString());
+  let diff = tmpdate2.getTime() - tmpdate1.getTime(); 
+  return {
+    movietime: Math.abs(diff) / 1000,
+    lat: parseFloat(trkpt.getAttribute('lat')),
+    lon: parseFloat(trkpt.getAttribute('lon')),
+    time: time,
+    dateStr: time.toLocaleDateString(),
+    timeStr: time.toLocaleTimeString(),
+    ele: trkpt.getElementsByTagName('ele')[0].textContent
+  };
+}
+
+function MapSetRootPoint(rootPoint, num) {
+  var myIcon = L.icon({
+    iconUrl: './images/' + "point.png",
+    iconAnchor: [7, 7],
+    iconSize: [15, 15]
+  })
+  var str = "天球動画；"+rootPoint[num]['movietime'];
+  var layer = L.marker([
+    rootPoint[num]['lat'],
+    rootPoint[num]['lon']
+  ]);
+  layer.setIcon(myIcon);
+  layer.bindTooltip(str, { direction: 'bottom', offset: L.point(0, 0) })
+
+  layer.on('click', function () { jumpMovieTime(rootPoint[num]['movietime'])});
+  layer.addTo(map);
+}
+
+
+// function createAllarr(){
+//   setTimeout(() => {
+//     console.log(GISarr);
+//     console.log(moviePos);
+
+//     for (var i = 0; i < (GISarr.length); i++) {
+//       var closestPoint = [moviePos[0]['lat'], moviePos[0]['lon']];
+//       var closestPointnum = 0;
+//       for(var j = 0; j < (moviePos.length); j++) {
+        
+//       }
+
+//       Allarr.push({
+//         kiro: GISarr[i][0],
+//         kirolat: GISarr[i][1],
+//         kirolog: GISarr[i][2],
+//         movietime: "",
+//         movielat: "",
+//         movielon: "",
+//       });
+//     }
+//     console.log(Allarr);
+//   }, 3000);
+// }
+
 function testtest_ver2() {
   console.log(readEquipData);
   for (var i = 0, len = readEquipData.Sheet1.length; i < len; i++) {
     for (var j = 0, len = GISarr.length; j < len; j++) {
       if ((readEquipData.Sheet1[i].キロ程始.replace(/[^0-9]/g, '') - GISarr[j][0].replace(/[^0-9]/g, '')) <= 5) {
-        readEquipData.Sheet1[i].test = readEquipData.Sheet1[i].キロ程始.replace(/[^0-9]/g,'');
+        readEquipData.Sheet1[i].test = readEquipData.Sheet1[i].キロ程始.replace(/[^0-9]/g, '');
         readEquipData.Sheet1[i].latitude = GISarr[j][1];
         readEquipData.Sheet1[i].longitude = GISarr[j][2];
-        break;}
+        break;
+      }
     }
     console.log(readEquipData.Sheet1[i]);
 
@@ -39,10 +147,11 @@ function phoneEquipRead() {
   for (var i = 0, len = readEquipData.Sheet1.length; i < len; i++) {
     for (var j = 0, len = GISarr.length; j < len; j++) {
       if ((readEquipData.Sheet1[i].キロ程始.replace(/[^0-9]/g, '') - GISarr[j][0].replace(/[^0-9]/g, '')) <= 5) {
-        readEquipData.Sheet1[i].test = readEquipData.Sheet1[i].キロ程始.replace(/[^0-9]/g,'');
+        readEquipData.Sheet1[i].test = readEquipData.Sheet1[i].キロ程始.replace(/[^0-9]/g, '');
         readEquipData.Sheet1[i].latitude = GISarr[j][1];
         readEquipData.Sheet1[i].longitude = GISarr[j][2];
-        break;}
+        break;
+      }
     }
     console.log(readEquipData.Sheet1[i]);
 
@@ -74,31 +183,13 @@ function MapSetMarkers(jsondata, markerNum) {
   //var movieURL = "<div id='movieURL'>"+"列車視点360度動画</div>";
   layer.bindPopup(googleMapURL);
   //layer.bindPopup('<div id="box">' + googleMapURL + movieURL + '</div>');
-  layer.on('click', function () { ClickMarkerEvent(jsondata.Sheet1[markerNum].キロ程始) });
+  layer.on('click', function () { kiroTomovieTimeEvent(jsondata.Sheet1[markerNum].キロ程始) });
   layer.addTo(map);
 }
 
-function ClickMarkerEvent(kiro) {
-  kiroTomovieTime(kiro.replace(".",""));
+function kiroTomovieTimeEvent(kiro) {
+  kiroTomovieTime(kiro.replace(".", ""));
 }
-
-var req = new XMLHttpRequest();
-req.open("get","東海道線GIS.csv",true);
-req.send(null);
-
-req.onload = function(){
-const GISresult = convertCSVtoArray(req.responseText);
-
-}
-function convertCSVtoArray(str){
-  var result_ = [];
-  var tmp = str.split("\n");
-  for(var i=0;i<tmp.length;++i){
-    result_[i] = tmp[i].split(',');
-  }
-  return result_;
-}
-
 
 
 // var form = document.forms.myform;

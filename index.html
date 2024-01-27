@@ -8,6 +8,7 @@
 	<meta name="description" content="360カメラで撮影した映像と設備位置情報を管理し閲覧するwebベースアプリ">
 	<script src="./js/aframe.min.js"></script>
 	<script src="./js/leaflet.js"></script>
+	<script src="//cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.5.1/gpx.min.js"></script>
 	<script src="https://vjs.zencdn.net/5.8/video.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r76/three.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/videojs-panorama@0.1.7/dist/videojs-panorama.v5.min.js"></script>
@@ -58,7 +59,6 @@
 			height: 100%;
 			object-fit: cover;
 			display: block;
-			padding-top:56.25%;/*比率調整※16:9の画面幅*/
 			z-index: 0;
 		}
 
@@ -189,6 +189,8 @@
 	<script src="js/init_show_map.js" charset="utf-8"></script>
 	<script src="js/show_map.js" charset="utf-8"></script>
 	<script src="js/movie_play.js"></script>
+	<script src="js/gpx.js"></script>
+	
 
 	<!-- Latest compiled and minified JavaScript -->
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.11.1/xlsx.full.min.js"></script>
