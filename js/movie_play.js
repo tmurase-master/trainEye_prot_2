@@ -2,12 +2,13 @@ const movie360 = videojs('video', {
     //fill: true,
     fuild: true,
     //responsive: true,
+    'preferFullWindow': true,
     'aspectRatio': '16:9',
     autoplay: true, // 自動再生
     loop: false, // ループ再生
     controls: true, // コントロール制御表示
     preload: 'auto', // 読み込み制御
-    'playbackRates': [0.1, 0.5, 1, 3 ,5, 10],
+    'playbackRates': [0.1, 0.5, 1, 3 ,5, 10]
 });
 movie360.src({
     type: 'video/mp4',
