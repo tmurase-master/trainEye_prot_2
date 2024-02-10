@@ -10,12 +10,15 @@
 	<script src="./js/leaflet.js"></script>
 	<script src="//cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.5.1/gpx.min.js"></script>
 	<script src="https://vjs.zencdn.net/5.8/video.js"></script>
+	<!-- <script src="https://vjs.zencdn.net/7.19.2/video.min.js"></script> -->
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r76/three.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/videojs-panorama@0.1.7/dist/videojs-panorama.v5.min.js"></script>
 	<link rel="stylesheet" href="./css/leaflet.css">
 	<link rel="stylesheet" href="css/style.css">
 	<link href="https://vjs.zencdn.net/5.8/video-js.css" rel="stylesheet">
+	<!-- <link href="https://vjs.zencdn.net/7.19.2/video-js.css" rel="stylesheet" /> -->
 	<link href="https://cdn.jsdelivr.net/npm/videojs-panorama@0.1.7/dist/videojs-panorama.min.css" rel="stylesheet">
+	
 
 	<style>
 		.flexbox {
@@ -113,7 +116,7 @@
 					<input type="file" name="upload_file" id="import-EQUIPexcel" accept=".xls,.xlsx,.xlsm" />
 					<p></p>
 				</form>
-				<button type="button" onclick="testtest_ver2()">地図表示</button>
+				<button type="button" onclick="loadEquipDataToMap()">地図表示</button>
 				<p></p>
 				<button id="phoneEquipRead-btn">スマホ用）設備位置データファイル読込</button>
 				<p></p>
@@ -143,14 +146,17 @@
 							<time id="playback_position">0:00</time>
 							<label id="fordevtime">0</time>
 						</div>
+						<div class="movie-kilometer">
+							<label id="fordevkilo">000000</time>
+						</div>
 						<div class="movie-button">
 							<button id="btn-start">再生</button>
 							<button id="btn-pause">一時停止</button>
 							<!-- <button id="btn-1x">通常速度</button> -->
 							<!-- <button id="btn-5x">10倍速</button> -->
 							<!-- <button id="btn--1x">-1倍速</button> -->
+							<button id="btn-back05sec">0.5秒巻戻</button>
 							<button id="btn-back1sec">1秒巻戻</button>
-							<button id="btn-back10sec">10秒巻戻</button>
 						</div>
 						<div class="form">
 							<label class="form-label">再生時間</label>

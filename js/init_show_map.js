@@ -7,7 +7,9 @@ window.addEventListener('load', function () {
     attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, '
   }).addTo(map);
   map.setView([35.145526, 138.641722], 11);
-  loadGPXdataToMap();
-  loadGISFile();
+  //loadGPXdataToMap();
+  currentPos();
+  loadKiloGISFile();
+  loadMovieGISFile();
   //createAllarr();
 })

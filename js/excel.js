@@ -130,7 +130,7 @@ document.getElementById('import-EQUIPexcel').addEventListener('change', function
   // }
 
   setTimeout(() => {
-    testtest_ver2();
+    loadEquipDataToMap();
   }, 1000);
 
   // function convertCSVtoArray(str) {
@@ -164,7 +164,7 @@ document.getElementById('phoneEquipRead-btn').addEventListener('click', function
   //   console.log(GISarr);
   // }
   setTimeout(() => {
-    testtest_ver2();
+    loadEquipDataToMap();
   }, 1000);
   
   // function convertCSVtoArray(str) {

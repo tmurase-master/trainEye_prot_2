@@ -1,8 +1,11 @@
 // グローバル変数
 var map;
 let moviePos = [];
-var GISarr;
-var Allarr= [];
+var kiloGISarr;
+var kiloGISobj = [];
+var movieGISarr;
+var movieGISobj = [];
+var nowlatlng ={};
 
 
 //仕様変更によりコメントアウト（キロ程データ読み込みボタン削除）
@@ -23,21 +26,79 @@ var Allarr= [];
 
 // }
 
-function loadGISFile() {
+function currentPos() {
+
+  //(1)APIに対応していないブラウザを排除
+  if (navigator.geolocation === false) {
+    alert("位置情報を取得できません。ブラウザが対応していません。");
+  }
+
+  //(2)位置情報取得オプションを設定(後述)
+  var options = {
+    enableHighAccuracy: false,
+    timeout: 5000,
+    maximumAge: 0
+  };
+
+  //(3)取得成功時の動作設定
+  function success(pos) {
+    nowlatlng.lat = pos.coords.latitude;
+    nowlatlng.lng = pos.coords.longitude;
+  }
+
+  //(4)取得失敗時(タイムアウトなど)の動作設定
+  function error(err) {
+    alert("位置情報を取得できませんでした。デバイスに位置情報を取得できる装置が無い、または取得に時間がかかっている、またはデバイスやブラウザ設定でブロックされています");
+  }
+
+  //(5)コマンドを実行
+  navigator.geolocation.getCurrentPosition(success, error, options);
+}
+
+
+function loadKiloGISFile() {
   var req = new XMLHttpRequest();
-  req.open("get", "東海道線GIS.csv", true);
+  req.open("get", "csv/movieTimeLinkTokiloMeter.csv", true);
   req.send(null);
   req.onload = function () {
-    GISarr = convertCSVtoArray(req.responseText);
+    kiloGISarr = convertCSVtoArray(req.responseText);
+    for (var i = 1, len = kiloGISarr.length; i < len; i++) {
+      if (kiloGISarr[i][0] == '') break;
+      kiloGISobj.push({
+        'kilo': kiloGISarr[i][6].replace(/[^0-9]/g, ''),
+        'kilolat': Number(kiloGISarr[i][5]),
+        'kilolng': Number(kiloGISarr[i][4]),
+        'moviesec': Number(kiloGISarr[i][3]),
+        'movietime': kiloGISarr[i][2],
+        'movielat': Number(kiloGISarr[i][1]),
+        'movielng': Number(kiloGISarr[i][0])
+      });
+    }
+    console.log(kiloGISobj);
   }
 }
-function convertCSVtoArray(str) {
-  var result_ = [];
-  var tmp = str.split("\n");
-  for (var i = 0; i < tmp.length; ++i) {
-    result_[i] = tmp[i].split(',');
+
+function loadMovieGISFile() {
+  var req = new XMLHttpRequest();
+  req.open("get", "csv/kiloMeterLinkToMovieTime.csv", true);
+  req.send(null);
+  req.onload = function () {
+    movieGISarr = convertCSVtoArray(req.responseText);
+    for (var i = 1, len = movieGISarr.length; i < len; i++) {
+      if (movieGISarr[i][0] == '') break;
+      movieGISobj.push({
+        'kilo': movieGISarr[i][6].replace(/[^0-9]/g, ''),
+        'kilolat': Number(movieGISarr[i][5]),
+        'kilolng': Number(movieGISarr[i][4]),
+        'moviesec': Number(movieGISarr[i][3]),
+        'movietime': movieGISarr[i][2],
+        'movielat': Number(movieGISarr[i][1]),
+        'movielng': Number(movieGISarr[i][0])
+      });
+    }
+    console.log(movieGISobj);
+    loadMovieToMap();
   }
-  return result_;
 }
 
 function loadGPXdataToMap() {
@@ -49,27 +110,44 @@ function loadGPXdataToMap() {
   }
 }
 
+function convertCSVtoArray(str) {
+  var result_ = [];
+  var tmp = str.split("\n");
+  for (var i = 0; i < tmp.length; ++i) {
+    result_[i] = tmp[i].split(',');
+  }
+  return result_;
+}
+
+function loadMovieToMap() {
+  var routeLatLng = [];
+  for (var i = 0, len = movieGISobj.length; i < len; i++) {
+    routeLatLng[i] = [movieGISobj[i].movielat, movieGISobj[i].movielng];
+    MapSetMoviePoint(movieGISobj[i], i);
+  }
+  L.polyline(routeLatLng, { color: '#3B83CC', weight: 5 }).addTo(map);
+}
+
 function gpxToMap(gpxStr) {
   var parser = new DOMParser();
   var gpx = parser.parseFromString(gpxStr, 'text/xml');
   var elements = gpx.getElementsByTagName('trkpt');
   var routeLatLng = [];
   for (var i = 0; i < (elements.length); i++) {
-    moviePos.push(gpxParse(elements.item(i),elements.item(0)));
-    MapSetRootPoint(moviePos, i);
+    moviePos.push(gpxParse(elements.item(i), elements.item(0)));
+    MapSetMoviePoint(moviePos, i);
     routeLatLng[i] = [moviePos[i]['lat'], moviePos[i]['lon']];
   }
   L.polyline(routeLatLng, { color: '#3B83CC', weight: 5 }).addTo(map);
-  
 }
-function gpxParse(trkpt,trkpt0) {
+function gpxParse(trkpt, trkpt0) {
   var timeTxt = trkpt.getElementsByTagName('time')[0].textContent;
   var time = new Date(timeTxt);
   var timeTxt0 = trkpt0.getElementsByTagName('time')[0].textContent;
   var time0 = new Date(timeTxt0);
   let tmpdate1 = new Date(time0.toLocaleDateString() + ' ' + time0.toLocaleTimeString());
   let tmpdate2 = new Date(time.toLocaleDateString() + ' ' + time.toLocaleTimeString());
-  let diff = tmpdate2.getTime() - tmpdate1.getTime(); 
+  let diff = tmpdate2.getTime() - tmpdate1.getTime();
   return {
     movietime: Math.abs(diff) / 1000,
     lat: parseFloat(trkpt.getAttribute('lat')),
@@ -81,85 +159,40 @@ function gpxParse(trkpt,trkpt0) {
   };
 }
 
-function MapSetRootPoint(rootPoint, num) {
+function MapSetMoviePoint(rootPoint, num) {
   var myIcon = L.icon({
     iconUrl: './images/' + "point.png",
     iconAnchor: [7, 7],
     iconSize: [15, 15]
   })
-  var str = "天球動画；"+rootPoint[num]['movietime'];
+  var str = "天球動画:" + rootPoint.movietime + "<br>" + "キロ程：" + rootPoint.kilo + "付近";
   var layer = L.marker([
-    rootPoint[num]['lat'],
-    rootPoint[num]['lon']
+    rootPoint.movielat, rootPoint.movielng
   ]);
   layer.setIcon(myIcon);
-  layer.bindTooltip(str, { direction: 'bottom', offset: L.point(0, 0) })
-
-  layer.on('click', function () { jumpMovieTime(rootPoint[num]['movietime'])});
+  layer.bindTooltip(str, { direction: 'bottom', offset: L.point(0, 0) });
+  var moviesec = rootPoint.moviesec;
+  layer.on('click', function () { jumpMovieTime(moviesec) });
   layer.addTo(map);
 }
 
-
-// function createAllarr(){
-//   setTimeout(() => {
-//     console.log(GISarr);
-//     console.log(moviePos);
-
-//     for (var i = 0; i < (GISarr.length); i++) {
-//       var closestPoint = [moviePos[0]['lat'], moviePos[0]['lon']];
-//       var closestPointnum = 0;
-//       for(var j = 0; j < (moviePos.length); j++) {
-        
-//       }
-
-//       Allarr.push({
-//         kiro: GISarr[i][0],
-//         kirolat: GISarr[i][1],
-//         kirolog: GISarr[i][2],
-//         movietime: "",
-//         movielat: "",
-//         movielon: "",
-//       });
-//     }
-//     console.log(Allarr);
-//   }, 3000);
-// }
-
-function testtest_ver2() {
+function loadEquipDataToMap() {
   console.log(readEquipData);
-  for (var i = 0, len = readEquipData.Sheet1.length; i < len; i++) {
-    for (var j = 0, len = GISarr.length; j < len; j++) {
-      if ((readEquipData.Sheet1[i].キロ程始.replace(/[^0-9]/g, '') - GISarr[j][0].replace(/[^0-9]/g, '')) <= 5) {
-        readEquipData.Sheet1[i].test = readEquipData.Sheet1[i].キロ程始.replace(/[^0-9]/g, '');
-        readEquipData.Sheet1[i].latitude = GISarr[j][1];
-        readEquipData.Sheet1[i].longitude = GISarr[j][2];
+  for (var i = 0, ilen = readEquipData.Sheet1.length; i < ilen; i++) {
+    for (var j = 0, jlen = kiloGISarr.length; j < jlen; j++) {
+      if (Math.abs((Number(readEquipData.Sheet1[i].キロ程始.replace(/[^0-9]/g, '')) - Number(kiloGISobj[j].kilo))) <= 5) {
+        readEquipData.Sheet1[i].kilo = readEquipData.Sheet1[i].キロ程始.replace(/[^0-9]/g, '');
+        readEquipData.Sheet1[i].latitude = kiloGISobj[j].kilolat;
+        readEquipData.Sheet1[i].longitude = kiloGISobj[j].kilolng;
         break;
       }
     }
     console.log(readEquipData.Sheet1[i]);
-
-    MapSetMarkers(readEquipData, i);
+    MapSetMarkers(readEquipData, i, kiloGISobj[binarySearch(readEquipData.Sheet1[i].kilo)].moviesec);
   }
 }
 
-function phoneEquipRead() {
-  readEquipData
-  for (var i = 0, len = readEquipData.Sheet1.length; i < len; i++) {
-    for (var j = 0, len = GISarr.length; j < len; j++) {
-      if ((readEquipData.Sheet1[i].キロ程始.replace(/[^0-9]/g, '') - GISarr[j][0].replace(/[^0-9]/g, '')) <= 5) {
-        readEquipData.Sheet1[i].test = readEquipData.Sheet1[i].キロ程始.replace(/[^0-9]/g, '');
-        readEquipData.Sheet1[i].latitude = GISarr[j][1];
-        readEquipData.Sheet1[i].longitude = GISarr[j][2];
-        break;
-      }
-    }
-    console.log(readEquipData.Sheet1[i]);
-
-    MapSetMarkers(readEquipData, i);
-  }
-}
-
-function MapSetMarkers(jsondata, markerNum) {
+function MapSetMarkers(jsondata, markerNum, movietime) {
   var myIcon = L.icon({
     iconUrl: './images/' + "marker.png",
     iconAnchor: [20, 40],
@@ -177,20 +210,53 @@ function MapSetMarkers(jsondata, markerNum) {
     jsondata.Sheet1[markerNum].longitude
   ]);
   layer.setIcon(myIcon);
-  layer.bindTooltip(str, { direction: 'bottom', offset: L.point(0, 0) })
-
-  var googleMapURL = "<a href=https://www.google.com/maps/@?api=1&map_action=pano&parameters&viewpoint=" + jsondata.Sheet1[markerNum].latitude + "," + jsondata.Sheet1[markerNum].longitude + " target='_blank'>" + "ストリートビュー</a>";
-  //var movieURL = "<div id='movieURL'>"+"列車視点360度動画</div>";
-  layer.bindPopup(googleMapURL);
+  layer.bindTooltip(str, { direction: 'bottom', offset: L.point(0, 0) });
+  var googleMapStreetURL = "<a href=https://www.google.com/maps/@?api=1&map_action=pano&parameters&viewpoint=" + jsondata.Sheet1[markerNum].latitude + "," + jsondata.Sheet1[markerNum].longitude + " target='_blank'>" + "ストリートビュー</a>" + "<br>";
+  var googleMapRootURL = "<a href=https://www.google.com/maps/dir/?api=1&origin=" + nowlatlng.lat + "," + nowlatlng.lng + "&destination=" + jsondata.Sheet1[markerNum].latitude + "," + jsondata.Sheet1[markerNum].longitude + "&layer=traffic&travelmode=driving target='_blank'>" + "現在地からの移動経路</a>";
+  https://www.google.com/maps/dir/?api=1&origin=東京駅&destination=横浜駅&travelmode=driving
+  layer.bindPopup(googleMapStreetURL + googleMapRootURL);
   //layer.bindPopup('<div id="box">' + googleMapURL + movieURL + '</div>');
-  layer.on('click', function () { kiroTomovieTimeEvent(jsondata.Sheet1[markerNum].キロ程始) });
+  layer.on('click', function () { jumpMovieTime(movietime) });
   layer.addTo(map);
 }
 
-function kiroTomovieTimeEvent(kiro) {
-  kiroTomovieTime(kiro.replace(".", ""));
-}
+function binarySearch(searchKilometer) {
+  var searchValue = Number(searchKilometer);
+  //「調べた値」と「探す値」が一致したとき、indexを保存する変数。
+  //初期値はエラー(-1)に設定
+  var index = -1;
 
+  //調べる左端を表す添字(index)
+  var left = 0;
+
+  //調べる右端を表す添字(index)
+  var right = kiloGISobj.length - 1;
+
+  //左端と右端にデータがある間は処理を繰り返す
+  var temp = 0;
+  while (left <= right) {
+
+    //左右の真ん中を表す添字(index)
+    middle = Math.floor((left + right) / 2);
+    temp = Number(kiloGISobj[middle].kilo);
+
+    //真ん中の値と探す値を比較する
+    if (Math.abs(temp - searchValue) < 5) {
+      //条件に合致した場合、変数に入れて処理終了
+      index = middle;
+      break;
+    } else if (temp < searchValue) {
+      //探す値より小さい場合、左側にはもっと小さい値しかないので左端の値を真ん中の値の右に移動する
+      left = middle + 1;
+    } else {
+      //探す値より大きい場合、右側にはもっと大きい値しかないので右端の値を真ん中の値の左に移動する
+      right = middle - 1;
+    }
+  }
+
+  //検索結果を表示する。(-1の場合は値がなかった)
+  return index;
+}
 
 // var form = document.forms.myform;
 // form.myfile.addEventListener( 'change', function(e) {
