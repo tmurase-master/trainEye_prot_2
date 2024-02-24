@@ -5,7 +5,12 @@ var kiloGISarr;
 var kiloGISobj = [];
 var movieGISarr;
 var movieGISobj = [];
-var nowlatlng ={};
+var railroadCrossingGISarr;
+var railroadCrossingGISobj = [];
+var electrificationPoleGISarr;
+var electrificationPoleGISobj = [];
+var nowlatlng = {};
+let overlayLayerControls = {};
 
 
 //仕様変更によりコメントアウト（キロ程データ読み込みボタン削除）
@@ -54,6 +59,92 @@ function currentPos() {
   //(5)コマンドを実行
   navigator.geolocation.getCurrentPosition(success, error, options);
 }
+
+function loadInitialEquipment() {
+  var req = new XMLHttpRequest();
+  req.open("get", "csv/railroad_crossing.csv", true);
+  req.overrideMimeType('text/plain; charset=Shift_JIS');
+  req.send(null);
+  req.onload = function () {
+    railroadCrossingGISarr = convertCSVtoArray(req.responseText);
+    for (var i = 1, len = railroadCrossingGISarr.length; i < len; i++) {
+      if (railroadCrossingGISarr[i][0] == '') break;
+      railroadCrossingGISobj.push({
+        'kilo': railroadCrossingGISarr[i][2].replace(/[^0-9]/g, ''),
+        'kilolat': Number(railroadCrossingGISarr[i][4]),
+        'kilolng': Number(railroadCrossingGISarr[i][3]),
+        'sitename': railroadCrossingGISarr[i][0],
+        'railroadcrossingname': railroadCrossingGISarr[i][1],
+      });
+    }
+    console.log(railroadCrossingGISobj);
+    loadRailroadCrossingEquipment();
+  }
+  var req2 = new XMLHttpRequest();
+  req2.open("get", "csv/electrification_pole.csv", true);
+  req2.overrideMimeType('text/plain; charset=Shift_JIS');
+  req2.send(null);
+  req2.onload = function () {
+    electrificationPoleGISarr = convertCSVtoArray(req2.responseText);
+    for (var i = 1, len = electrificationPoleGISarr.length; i < len; i++) {
+      if (electrificationPoleGISarr[i][0] == '') break;
+      electrificationPoleGISobj.push({
+        'kilo': electrificationPoleGISarr[i][2].replace(/[^0-9]/g, ''),
+        'kilolat': Number(electrificationPoleGISarr[i][4]),
+        'kilolng': Number(electrificationPoleGISarr[i][3]),
+        'sitename': electrificationPoleGISarr[i][0],
+        'electrificationpolename': electrificationPoleGISarr[i][1],
+      });
+    }
+    console.log(electrificationPoleGISobj);
+    loadElectrificationPoleEquipment();
+  }
+}
+function loadRailroadCrossingEquipment() {
+  var layer = L.layerGroup();
+
+  var myIcon = L.icon({
+    iconUrl: './images/' + "fumikiri.png",
+    iconAnchor: [20, 40],
+    iconSize: [30, 40]
+  })
+
+  for (var i = 0, ilen = railroadCrossingGISobj.length; i < ilen; i++) {
+    var marker = L.marker([
+      railroadCrossingGISobj[i].kilolat, railroadCrossingGISobj[i].kilolng
+    ]);
+    var str = "位置：" + railroadCrossingGISobj[i].sitename + "<br>" + "踏切名：" + railroadCrossingGISobj[i].railroadcrossingname + "踏切" + "<br>" + "キロ程：" + railroadCrossingGISobj[i].kilo + "付近";
+    var googleMapStreetURL = "<a href=https://www.google.com/maps/@?api=1&map_action=pano&parameters&viewpoint=" + railroadCrossingGISobj[i].kilolat + "," + railroadCrossingGISobj[i].kilolng + " target='_blank'>" + "ストリートビュー</a>" + "<br>";
+    var googleMapRootURL = "<a href=https://www.google.com/maps/dir/?api=1&origin=" + nowlatlng.lat + "," + nowlatlng.lng + "&destination=" + railroadCrossingGISobj[i].kilolat + "," + railroadCrossingGISobj[i].kilolng + "&layer=traffic&travelmode=driving target='_blank'>" + "現在地からの移動経路</a>";
+    marker.bindPopup(str + "<br>" + googleMapStreetURL + googleMapRootURL);
+    marker.setIcon(myIcon);
+    marker.bindTooltip(str, { direction: 'bottom', offset: L.point(0, 0) });
+    layer.addLayer(marker)
+  }
+  overlayLayerControls['踏切'] = layer;
+}
+function loadElectrificationPoleEquipment() {
+  var layer = L.layerGroup();
+
+  var myIcon = L.icon({
+    iconUrl: './images/' + "denchu.png",
+    iconAnchor: [10, 20],
+    iconSize: [15, 20]
+  })
+
+  for (var i = 0, ilen = electrificationPoleGISobj.length; i < ilen; i++) {
+    var marker = L.marker([
+      electrificationPoleGISobj[i].kilolat, electrificationPoleGISobj[i].kilolng
+    ]);
+    var str = "位置：" + electrificationPoleGISobj[i].sitename + "<br>" + "電柱名：" + electrificationPoleGISobj[i].electrificationpolename + "<br>" + "キロ程：" + electrificationPoleGISobj[i].kilo + "付近";
+    marker.setIcon(myIcon);
+    marker.bindTooltip(str, { direction: 'bottom', offset: L.point(0, 0) });
+    layer.addLayer(marker)
+  }
+  overlayLayerControls['電柱'] = layer;
+  L.control.layers(null, overlayLayerControls, { collapsed: false }).addTo(map);
+}
+
 
 
 function loadKiloGISFile() {
@@ -213,7 +304,6 @@ function MapSetMarkers(jsondata, markerNum, movietime) {
   layer.bindTooltip(str, { direction: 'bottom', offset: L.point(0, 0) });
   var googleMapStreetURL = "<a href=https://www.google.com/maps/@?api=1&map_action=pano&parameters&viewpoint=" + jsondata.Sheet1[markerNum].latitude + "," + jsondata.Sheet1[markerNum].longitude + " target='_blank'>" + "ストリートビュー</a>" + "<br>";
   var googleMapRootURL = "<a href=https://www.google.com/maps/dir/?api=1&origin=" + nowlatlng.lat + "," + nowlatlng.lng + "&destination=" + jsondata.Sheet1[markerNum].latitude + "," + jsondata.Sheet1[markerNum].longitude + "&layer=traffic&travelmode=driving target='_blank'>" + "現在地からの移動経路</a>";
-  https://www.google.com/maps/dir/?api=1&origin=東京駅&destination=横浜駅&travelmode=driving
   layer.bindPopup(googleMapStreetURL + googleMapRootURL);
   //layer.bindPopup('<div id="box">' + googleMapURL + movieURL + '</div>');
   layer.on('click', function () { jumpMovieTime(movietime) });
