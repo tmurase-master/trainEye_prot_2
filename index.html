@@ -6,19 +6,23 @@
 	<title>「トレイン・アイ」</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<meta name="description" content="360カメラで撮影した映像と設備位置情報を管理し閲覧するwebベースアプリ">
-	<script src="./js/aframe.min.js"></script>
+	<!-- <script src="./js/aframe.min.js"></script> -->
 	<script src="./js/leaflet.js"></script>
-	<script src="//cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.5.1/gpx.min.js"></script>
+	<!-- <script src="//cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.5.1/gpx.min.js"></script> -->
 	<script src="https://vjs.zencdn.net/5.8/video.js"></script>
 	<!-- <script src="https://vjs.zencdn.net/7.19.2/video.min.js"></script> -->
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r76/three.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/videojs-panorama@0.1.7/dist/videojs-panorama.v5.min.js"></script>
+	<script src="./js/Control.FullScreen.js"></script>
+	<!-- <link rel="stylesheet" href="https://unpkg.com/leaflet.pinsearch/src/Leaflet.PinSearch.css" crossorigin=""></script> -->
 	<link rel="stylesheet" href="./css/leaflet.css">
 	<link rel="stylesheet" href="css/style.css">
 	<link href="https://vjs.zencdn.net/5.8/video-js.css" rel="stylesheet">
 	<!-- <link href="https://vjs.zencdn.net/7.19.2/video-js.css" rel="stylesheet" /> -->
 	<link href="https://cdn.jsdelivr.net/npm/videojs-panorama@0.1.7/dist/videojs-panorama.min.css" rel="stylesheet">
-	
+	<link rel="stylesheet" href="./css/Control.FullScreen.css" />
+	<!-- <link rel="stylesheet" href="https://unpkg.com/leaflet.pinsearch/src/Leaflet.PinSearch.css" crossorigin=""></script> -->
+
 
 	<style>
 		.flexbox {
@@ -84,6 +88,22 @@
 			-webkit-transform: translate(-50%, -50%);
 			-ms-transform: translate(-50%, -50%);
 		}
+
+		.label-btn {
+			display: inline-block;
+			padding: 5px 5px;
+			background-color: #7fbfff;
+			cursor: pointer;
+			border-radius: 3px;
+			border: 0;
+			color: #fff;
+			font-weight: bold;
+			transition: 0.3s;
+		}
+
+		.label-btn:hover {
+			opacity: 0.7;
+		}
 	</style>
 </head>
 
@@ -109,16 +129,20 @@
 	<main>
 		<section>
 			<h2>設備位置データファイル「読込」</h2>
+
+
 			<div class="equip-add">
-				<button>東海道線（線区を切り替える機能は開発中）</button>
-				<p></p>
+				<!-- <button>東海道線（線区を切り替える機能は開発中）</button>
+				<p></p> -->
+				<button id="phoneEquipRead-btn">スマホ用）設備位置データファイル読込</button>
 				<form action="" method="get">
 					<input type="file" name="upload_file" id="import-EQUIPexcel" accept=".xls,.xlsx,.xlsm" />
 					<p></p>
 				</form>
-				<button type="button" onclick="loadEquipDataToMap()">地図表示</button>
-				<p></p>
-				<button id="phoneEquipRead-btn">スマホ用）設備位置データファイル読込</button>
+				<!-- <button type="button" onclick="loadEquipDataToMap()">地図表示</button>
+				<p></p> -->
+
+
 				<p></p>
 			</div>
 			<div class='flexbox'>
@@ -143,11 +167,15 @@
 					</div>
 					<div class="movie-customize">
 						<div class="movie-currentTime">
-							<time id="playback_position">0:00</time>
-							<label id="fordevtime">0</time>
+							<label class="label-btn">再生時間</label>
+							<label id="playback_position">0:00</label>
+							
+							<label class="label-btn">（秒数）</label>
+							<label id="fordevtime">0</label>
 						</div>
 						<div class="movie-kilometer">
-							<label id="fordevkilo">000000</time>
+							<label class="label-btn">キロ程</label>
+							<label id="fordevkilo">000000</label>
 						</div>
 						<div class="movie-button">
 							<button id="btn-start">再生</button>
@@ -159,13 +187,13 @@
 							<button id="btn-back1sec">1秒巻戻</button>
 						</div>
 						<div class="form">
-							<label class="form-label">再生時間</label>
+							<label class="form-label">再生秒数</label>
 							<input type="number" id="input-time" value="60.000" name="input-time">
 							<input type="button" value="ジャンプ" id="btn-jump">
 							<div class="error"></div>
 
 							<label class="form-label-kiro">キロ程</label>
-							<input type="number" id="input-kiro" value="150489" name="input-kiro">
+							<input type="number" id="input-kiro" value="170000" name="input-kiro">
 							<input type="button" value="ジャンプ" id="btn-jump-kiro">
 							<div class="error"></div>
 						</div>
@@ -196,7 +224,7 @@
 	<script src="js/show_map.js" charset="utf-8"></script>
 	<script src="js/movie_play.js"></script>
 	<script src="js/gpx.js"></script>
-	
+
 
 	<!-- Latest compiled and minified JavaScript -->
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.11.1/xlsx.full.min.js"></script>

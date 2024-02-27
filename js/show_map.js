@@ -10,7 +10,7 @@ var railroadCrossingGISobj = [];
 var electrificationPoleGISarr;
 var electrificationPoleGISobj = [];
 var nowlatlng = {};
-let overlayLayerControls = {};
+let overlayLayerControls = [];
 
 
 //仕様変更によりコメントアウト（キロ程データ読み込みボタン削除）
@@ -78,7 +78,6 @@ function loadInitialEquipment() {
       });
     }
     console.log(railroadCrossingGISobj);
-    loadRailroadCrossingEquipment();
   }
   var req2 = new XMLHttpRequest();
   req2.open("get", "csv/electrification_pole.csv", true);
@@ -97,7 +96,25 @@ function loadInitialEquipment() {
       });
     }
     console.log(electrificationPoleGISobj);
-    loadElectrificationPoleEquipment();
+  }
+  var flag = 0;
+  req.onreadystatechange = function () {
+    if (req2.readyState === 4 && req.readyState === 4 && flag === 0) {
+      flag = 1;
+      setTimeout(() => {
+        loadRailroadCrossingEquipment();
+        loadElectrificationPoleEquipment();
+      }, 1000);
+    }
+  }
+  req2.onreadystatechange = function () {
+    if (req2.readyState === 4 && req.readyState === 4 && flag === 0) {
+      flag = 1;
+      setTimeout(() => {
+        loadRailroadCrossingEquipment();
+        loadElectrificationPoleEquipment();
+      }, 1000);
+    }
   }
 }
 function loadRailroadCrossingEquipment() {
@@ -105,14 +122,15 @@ function loadRailroadCrossingEquipment() {
 
   var myIcon = L.icon({
     iconUrl: './images/' + "fumikiri.png",
-    iconAnchor: [20, 40],
-    iconSize: [30, 40]
+    iconAnchor: [18, 40],
+    iconSize: [36, 40]
   })
 
   for (var i = 0, ilen = railroadCrossingGISobj.length; i < ilen; i++) {
     var marker = L.marker([
-      railroadCrossingGISobj[i].kilolat, railroadCrossingGISobj[i].kilolng
-    ]);
+      railroadCrossingGISobj[i].kilolat, railroadCrossingGISobj[i].kilolng],
+      { title: railroadCrossingGISobj[i].railroadcrossingname }
+    );
     var str = "位置：" + railroadCrossingGISobj[i].sitename + "<br>" + "踏切名：" + railroadCrossingGISobj[i].railroadcrossingname + "踏切" + "<br>" + "キロ程：" + railroadCrossingGISobj[i].kilo + "付近";
     var googleMapStreetURL = "<a href=https://www.google.com/maps/@?api=1&map_action=pano&parameters&viewpoint=" + railroadCrossingGISobj[i].kilolat + "," + railroadCrossingGISobj[i].kilolng + " target='_blank'>" + "ストリートビュー</a>" + "<br>";
     var googleMapRootURL = "<a href=https://www.google.com/maps/dir/?api=1&origin=" + nowlatlng.lat + "," + nowlatlng.lng + "&destination=" + railroadCrossingGISobj[i].kilolat + "," + railroadCrossingGISobj[i].kilolng + "&layer=traffic&travelmode=driving target='_blank'>" + "現在地からの移動経路</a>";
@@ -128,8 +146,8 @@ function loadElectrificationPoleEquipment() {
 
   var myIcon = L.icon({
     iconUrl: './images/' + "denchu.png",
-    iconAnchor: [10, 20],
-    iconSize: [15, 20]
+    iconAnchor: [9, 20],
+    iconSize: [18, 20]
   })
 
   for (var i = 0, ilen = electrificationPoleGISobj.length; i < ilen; i++) {
@@ -137,11 +155,20 @@ function loadElectrificationPoleEquipment() {
       electrificationPoleGISobj[i].kilolat, electrificationPoleGISobj[i].kilolng
     ]);
     var str = "位置：" + electrificationPoleGISobj[i].sitename + "<br>" + "電柱名：" + electrificationPoleGISobj[i].electrificationpolename + "<br>" + "キロ程：" + electrificationPoleGISobj[i].kilo + "付近";
-    marker.setIcon(myIcon);
+    var googleMapStreetURL = "<a href=https://www.google.com/maps/@?api=1&map_action=pano&parameters&viewpoint=" + electrificationPoleGISobj[i].kilolat + "," + electrificationPoleGISobj[i].kilolng + " target='_blank'>" + "ストリートビュー</a>" + "<br>";
+    var googleMapRootURL = "<a href=https://www.google.com/maps/dir/?api=1&origin=" + nowlatlng.lat + "," + nowlatlng.lng + "&destination=" + electrificationPoleGISobj[i].kilolat + "," + electrificationPoleGISobj[i].kilolng + "&layer=traffic&travelmode=driving target='_blank'>" + "現在地からの移動経路</a>";
+    marker.bindPopup(str + "<br>" + googleMapStreetURL + googleMapRootURL); marker.setIcon(myIcon);
     marker.bindTooltip(str, { direction: 'bottom', offset: L.point(0, 0) });
     layer.addLayer(marker)
   }
   overlayLayerControls['電柱'] = layer;
+
+  // overlayLayerControls.push({
+  //   name: "電柱",
+  //   icon: '<i class="icon icon-water"></i>',
+  //   layer: layer
+  // });
+  // map.addControl( new L.Control.PanelLayers(null, overlayLayerControls) );
   L.control.layers(null, overlayLayerControls, { collapsed: false }).addTo(map);
 }
 
@@ -253,8 +280,8 @@ function gpxParse(trkpt, trkpt0) {
 function MapSetMoviePoint(rootPoint, num) {
   var myIcon = L.icon({
     iconUrl: './images/' + "point.png",
-    iconAnchor: [7, 7],
-    iconSize: [15, 15]
+    iconAnchor: [3, 3],
+    iconSize: [6, 6]
   })
   var str = "天球動画:" + rootPoint.movietime + "<br>" + "キロ程：" + rootPoint.kilo + "付近";
   var layer = L.marker([
@@ -329,6 +356,44 @@ function binarySearch(searchKilometer) {
     //左右の真ん中を表す添字(index)
     middle = Math.floor((left + right) / 2);
     temp = Number(kiloGISobj[middle].kilo);
+
+    //真ん中の値と探す値を比較する
+    if (Math.abs(temp - searchValue) < 5) {
+      //条件に合致した場合、変数に入れて処理終了
+      index = middle;
+      break;
+    } else if (temp < searchValue) {
+      //探す値より小さい場合、左側にはもっと小さい値しかないので左端の値を真ん中の値の右に移動する
+      left = middle + 1;
+    } else {
+      //探す値より大きい場合、右側にはもっと大きい値しかないので右端の値を真ん中の値の左に移動する
+      right = middle - 1;
+    }
+  }
+
+  //検索結果を表示する。(-1の場合は値がなかった)
+  return index;
+}
+
+function binarySearchMovie(searchMoviesec) {
+  var searchValue = Number(searchMoviesec);
+  //「調べた値」と「探す値」が一致したとき、indexを保存する変数。
+  //初期値はエラー(-1)に設定
+  var index = -1;
+
+  //調べる左端を表す添字(index)
+  var left = 0;
+
+  //調べる右端を表す添字(index)
+  var right = movieGISobj.length - 1;
+
+  //左端と右端にデータがある間は処理を繰り返す
+  var temp = 0;
+  while (left <= right) {
+
+    //左右の真ん中を表す添字(index)
+    middle = Math.floor((left + right) / 2);
+    temp = Number(movieGISobj[middle].moviesec);
 
     //真ん中の値と探す値を比較する
     if (Math.abs(temp - searchValue) < 5) {

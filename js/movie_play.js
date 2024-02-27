@@ -23,6 +23,7 @@ movie360.on('playing', function () {
     playtimer = setInterval(function(){
         playback_position.textContent = convertTime(movie360.currentTime());
         fordevtime.textContent = movie360.currentTime();
+        console.log(Math.trunc(movie360.currentTime()));
         fordevkilo.textContent = movieGISobj[Math.trunc(movie360.currentTime())].kilo;
     }, 500);
 });
