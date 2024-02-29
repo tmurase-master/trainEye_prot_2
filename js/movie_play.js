@@ -15,7 +15,7 @@ movie360.src({
     src: 'movies/front_side.mp4'
 });
 movie360.panorama({
-    autoMobileOrientation: true,
+    autoMobileOrientation: false,
     initFov: 100,
     clickAndDrag: true
 });
